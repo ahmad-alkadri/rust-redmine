@@ -5,16 +5,27 @@ use crate::{
 use reqwest::Error;
 
 impl RedmineClient {
-    pub async fn get_issues(&self) -> Result<Vec<Issue>, Error> {
-        let url = format!("{}/issues.json?key={}", self.base_url, self.api_key);
-        let response = self
-            .client
-            .get(&url)
-            .send()
-            .await?
-            .json::<IssuesResult>()
-            .await?;
-        Ok(response.issues)
+    pub async fn get_issues(&self) -> Result<Vec<Issue>, Box<dyn std::error::Error>> {
+        let url: String = format!("{}/issues.json?key={}", self.base_url, self.api_key);
+        let response: reqwest::Response = self.client.get(&url).send().await?;
+
+        // Check the status code first
+        if !response.status().is_success() {
+            let status: reqwest::StatusCode = response.status();
+            return Err(format!("Failed to fetch issues: Status code {}", status).into());
+        }
+
+        // Attempt to deserialize the response using match
+        let response_text: String = response.text().await?;
+        let issues_result: IssuesResult = match serde_json::from_str(&response_text) {
+            Ok(result) => result,
+            Err(e) => {
+                eprintln!("Error decoding response: {}", e);
+                return Err(Box::new(e));
+            }
+        };
+
+        Ok(issues_result.issues)
     }
 
     pub async fn get_issue(&self, id: i32) -> Result<Issue, Error> {

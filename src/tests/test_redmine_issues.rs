@@ -29,7 +29,7 @@ pub async fn test_get_issues() {
     match client.get_issues().await {
         Ok(issues) => {
             for issue in issues {
-                println!("Issue: {} - {}", issue.id, issue.subject);
+                println!("Issue: {:?} - {:?}", issue.id, issue.subject);
             }
         }
         Err(err) => {
