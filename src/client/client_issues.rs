@@ -5,7 +5,7 @@ use crate::{
 use reqwest::Error;
 
 impl RedmineClient {
-    pub async fn get_issues(&self) -> Result<Vec<Issue>, Box<dyn std::error::Error>> {
+    pub async fn get_issues(&self) -> Result<IssuesResult, Box<dyn std::error::Error>> {
         let url: String = format!("{}/issues.json?key={}", self.base_url, self.api_key);
         let response: reqwest::Response = self.client.get(&url).send().await?;
 
@@ -25,11 +25,11 @@ impl RedmineClient {
             }
         };
 
-        Ok(issues_result.issues)
+        Ok(issues_result)
     }
 
-    pub async fn get_issue(&self, id: i32) -> Result<Issue, Error> {
-        let url = format!("{}/issues/{}.json?key={}", self.base_url, id, self.api_key);
+    pub async fn get_issue(&self, id: i32) -> Result<Option<Issue>, Error> {
+        let url: String = format!("{}/issues/{}.json?key={}", self.base_url, id, self.api_key);
         let response = self
             .client
             .get(&url)
@@ -40,7 +40,7 @@ impl RedmineClient {
         Ok(response.issue)
     }
 
-    pub async fn get_issues_by_query(&self, query_id: i32) -> Result<Vec<Issue>, Error> {
+    pub async fn get_issues_by_query(&self, query_id: i32) -> Result<Option<Vec<Issue>>, Error> {
         let url = format!(
             "{}/issues.json?query_id={}&key={}",
             self.base_url, query_id, self.api_key
@@ -55,7 +55,10 @@ impl RedmineClient {
         Ok(response.issues)
     }
 
-    pub async fn get_issues_by_filter(&self, filter: &IssueFilter) -> Result<Vec<Issue>, Error> {
+    pub async fn get_issues_by_filter(
+        &self,
+        filter: &IssueFilter,
+    ) -> Result<Option<Vec<Issue>>, Error> {
         let mut query_params = vec![("key", self.api_key.clone())];
 
         if let Some(project_id) = &filter.project_id {

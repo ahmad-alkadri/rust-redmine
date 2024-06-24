@@ -8,32 +8,32 @@ pub struct IssueRequest {
 
 #[derive(Deserialize, Debug)]
 pub struct IssueResult {
-    pub issue: Issue,
+    pub issue: Option<Issue>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct IssuesResult {
-    pub issues: Vec<Issue>,
-    pub total_count: u32,
-    pub offset: u32,
-    pub limit: u32,
+    pub issues: Option<Vec<Issue>>,
+    pub total_count: Option<u32>,
+    pub offset: Option<u32>,
+    pub limit: Option<u32>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct JournalDetails {
-    property: String,
-    name: String,
-    old_value: String,
-    new_value: String,
+    property: Option<String>,
+    name: Option<String>,
+    old_value: Option<String>,
+    new_value: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Journal {
-    id: i32,
+    id: Option<i32>,
     user: Option<IdName>,
-    notes: String,
-    created_on: String,
-    details: Vec<JournalDetails>,
+    notes: Option<String>,
+    created_on: Option<String>,
+    details: Option<Vec<JournalDetails>>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -73,32 +73,32 @@ pub struct Issue {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IdName {
-    id: i32,
-    name: String,
+    id: Option<i32>,
+    name: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Id {
-    id: i32,
+    id: Option<i32>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CustomField {
-    id: i32,
-    name: String,
-    description: String,
+    id: Option<i32>,
+    name: Option<String>,
+    description: Option<String>,
     multiple: bool,
     value: serde_json::Value,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Upload {
-    id: String,
-    filename: String,
-    filesize: u64,
-    content_type: String,
+    id: Option<String>,
+    filename: Option<String>,
+    filesize: Option<u64>,
+    content_type: Option<String>,
     description: Option<String>,
-    token: String,
+    token: Option<String>,
 }
 
 #[derive(Debug)]

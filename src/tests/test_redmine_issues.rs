@@ -27,11 +27,14 @@ pub async fn test_get_issues() {
     let client = RedmineClient::new(&redmine_url, &api_key);
 
     match client.get_issues().await {
-        Ok(issues) => {
-            for issue in issues {
-                println!("Issue: {:?} - {:?}", issue.id, issue.subject);
+        Ok(issues_result) => match &issues_result.issues {
+            Some(issues) => {
+                for issue in issues {
+                    println!("Issue: {:?} - {:?}", issue.id, issue.subject);
+                }
             }
-        }
+            None => println!("Found no issues at all."),
+        },
         Err(err) => {
             eprintln!("Error fetching issues: {}", err);
         }
