@@ -1,3 +1,3 @@
 pub mod client;
-pub mod issues;
+pub mod fields;
 pub mod tests;

@@ -1,6 +1,6 @@
 use crate::{
     client::client::RedmineClient,
-    issues::issues::{Issue, IssueFilter, IssueRequest, IssueResult, IssuesResult},
+    fields::issues::{Issue, IssueFilter, IssueResult, IssuesResult},
 };
 use reqwest::Error;
 
@@ -103,23 +103,31 @@ impl RedmineClient {
         Ok(response.issues)
     }
 
-    pub async fn create_issue(&self, issue: Issue) -> Result<Issue, Error> {
-        let url = format!("{}/issues.json?key={}", self.base_url, self.api_key);
-        let mut request: IssueRequest;
-        let response = self
-            .client
-            .post(&url)
-            .json(&request)
-            .send()
-            .await?
-            .json::<IssueResult>()
-            .await?;
+    // pub async fn create_issue(&self, issue: Issue) -> Result<Issue, io::Error> {
+    //     let url = format!("{}/issues.json?key={}", self.base_url, self.api_key);
 
-        match response.issue {
-            Some(issue) => Ok(issue),
-            None => todo!(),
-        }
-    }
+    //     let request = IssueRequest {
+    //         issue,
+    //         pubissue: issue,
+    //     };
+
+    //     let response = self
+    //         .client
+    //         .post(&url)
+    //         .json(&request)
+    //         .send()
+    //         .await?
+    //         .json::<IssueResult>()
+    //         .await?;
+
+    //     match response.issue {
+    //         Some(issue) => Ok(issue),
+    //         None => Err(io::Error::new(
+    //             io::ErrorKind::Other,
+    //             "Failed to create issue",
+    //         )),
+    //     }
+    // }
 
     // pub async fn update_issue(&self, issue: Issue) -> Result<(), Error> {
     //     let url = format!(

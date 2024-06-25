@@ -1,10 +1,12 @@
 use std::env;
 
+#[allow(dead_code)]
 pub struct UrlApik {
     pub url: String,
     pub apik: String,
 }
 
+#[allow(dead_code)]
 impl UrlApik {
     pub fn new() -> UrlApik {
         UrlApik {

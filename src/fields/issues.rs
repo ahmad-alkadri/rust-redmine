@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IssueRequest {
-    pubissue: Issue,
+    pub(crate) pubissue: Issue,
     pub(crate) issue: Issue,
 }
 
