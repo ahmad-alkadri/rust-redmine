@@ -1,6 +1,6 @@
 use crate::{
     client::client::RedmineClient,
-    issues::issues::{Issue, IssueFilter, IssueResult, IssuesResult},
+    issues::issues::{Issue, IssueFilter, IssueRequest, IssueResult, IssuesResult},
 };
 use reqwest::Error;
 
@@ -85,17 +85,15 @@ impl RedmineClient {
             }
         }
 
-        let url = format!(
-            "{}/issues.json?{}",
-            self.base_url,
-            query_params
-                .iter()
-                .map(|(k, v)| format!("{}={}", k, v))
-                .collect::<Vec<String>>()
-                .join("&")
-        );
+        let formatted_query_params: String = query_params
+            .iter()
+            .map(|(k, v)| format!("{}={}", k, v))
+            .collect::<Vec<String>>()
+            .join("&");
 
-        let response = self
+        let url: String = format!("{}/issues.json?{}", self.base_url, formatted_query_params);
+
+        let response: IssuesResult = self
             .client
             .get(&url)
             .send()
@@ -105,20 +103,23 @@ impl RedmineClient {
         Ok(response.issues)
     }
 
-    // pub async fn create_issue(&self, issue: Issue) -> Result<Issue, Error> {
-    //     let url = format!("{}/issues.json?key={}", self.base_url, self.api_key);
-    //     let mut request: IssueRequest;
+    pub async fn create_issue(&self, issue: Issue) -> Result<Issue, Error> {
+        let url = format!("{}/issues.json?key={}", self.base_url, self.api_key);
+        let mut request: IssueRequest;
+        let response = self
+            .client
+            .post(&url)
+            .json(&request)
+            .send()
+            .await?
+            .json::<IssueResult>()
+            .await?;
 
-    //     let response = self
-    //         .client
-    //         .post(&url)
-    //         .json(&request)
-    //         .send()
-    //         .await?
-    //         .json::<IssueResult>()
-    //         .await?;
-    //     Ok(response.issue)
-    // }
+        match response.issue {
+            Some(issue) => Ok(issue),
+            None => todo!(),
+        }
+    }
 
     // pub async fn update_issue(&self, issue: Issue) -> Result<(), Error> {
     //     let url = format!(
