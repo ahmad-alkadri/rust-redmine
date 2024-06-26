@@ -14,7 +14,7 @@ pub async fn test_get_issues() {
     assert!(!urlapik.any_empty(), "REDMINE_URL and REDMINE_API_KEY not found. Please set them in environment variables before running the test.");
 
     // Create RedmineClient instance
-    let client = RedmineClient::new(&urlapik.url, &urlapik.apik);
+    let client = RedmineClient::new(&urlapik.url, &urlapik.apik, None, None);
 
     // Fetch issues and handle result
     let issues_result = client.get_issues().await.expect("Failed to fetch issues");
