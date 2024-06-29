@@ -1,8 +1,11 @@
 use crate::{
     client::client::RedmineClient,
-    fields::issues::{Issue, IssueFilter, IssueResult, IssuesResult},
+    fields::{
+        errors::ErrorsResult,
+        issues::{Issue, IssueFilter, IssueRequest, IssueResult, IssuesResult},
+    },
 };
-use reqwest::Error;
+use reqwest::{Error, Response};
 
 impl RedmineClient {
     pub async fn get_issues(
@@ -109,34 +112,44 @@ impl RedmineClient {
             .await?
             .json::<IssuesResult>()
             .await?;
+
         Ok(response.issues)
     }
 
-    // pub async fn create_issue(&self, issue: Issue) -> Result<Issue, io::Error> {
-    //     let url = format!("{}/issues.json?key={}", self.base_url, self.api_key);
+    pub async fn create_issue(
+        &self,
+        issue: Issue,
+    ) -> Result<IssueResult, Box<dyn std::error::Error>> {
+        let ir = IssueRequest {
+            pubissue: None,
+            issue: issue.clone(),
+        };
+        let s = serde_json::to_string(&ir)?;
 
-    //     let request = IssueRequest {
-    //         issue,
-    //         pubissue: issue,
-    //     };
+        let url = format!("{}/issues.json?key={}", self.base_url, self.api_key);
+        let req = self
+            .client
+            .post(&url)
+            .header("Content-Type", "application/json")
+            .body(s)
+            .build()?;
 
-    //     let response = self
-    //         .client
-    //         .post(&url)
-    //         .json(&request)
-    //         .send()
-    //         .await?
-    //         .json::<IssueResult>()
-    //         .await?;
+        let res: Response = self.client.execute(req).await?;
 
-    //     match response.issue {
-    //         Some(issue) => Ok(issue),
-    //         None => Err(io::Error::new(
-    //             io::ErrorKind::Other,
-    //             "Failed to create issue",
-    //         )),
-    //     }
-    // }
+        let statuscode = res.status();
+        if statuscode != reqwest::StatusCode::CREATED {
+            let er: ErrorsResult = res.json().await?;
+            let error_message = er.errors.join("\n");
+            return Err(Box::new(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                error_message,
+            )));
+        }
+
+        let r: IssueResult = res.json().await?;
+
+        Ok(r)
+    }
 
     // pub async fn update_issue(&self, issue: Issue) -> Result<(), Error> {
     //     let url = format!(
