@@ -1,9 +1,5 @@
 use tokio;
 
-/// In Rust, the `.await` keyword is used in asynchronous functions to pause the execution of
-/// the current function until the awaited future completes. When you call a function that
-/// returns a future, such as an asynchronous operation like network request or file I/O, you
-/// can use `.await` to wait for that operation to finish without blocking the entire thread.
 #[tokio::test]
 pub async fn test_create_get_delete_project() {
     use crate::client::client::RedmineClient;
