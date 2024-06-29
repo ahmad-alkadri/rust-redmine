@@ -17,16 +17,11 @@ pub async fn test_get_issues() {
     let client = RedmineClient::new(&urlapik.url, &urlapik.apik, None, None);
 
     // Fetch issues and handle result
-    let issues_result = client
-        .get_issues(None, None)
-        .await
-        .expect("Failed to fetch issues");
+    let issues_result = client.get_issues(None, None).await;
 
-    if let Some(issues) = issues_result.issues {
-        for issue in issues {
-            println!("Issue: {:?} - {:?}", issue.id, issue.subject);
-        }
-    } else {
-        println!("Found no issues at all.");
-    }
+    assert!(
+        issues_result.is_ok(),
+        "Failed to get issues: {:?}",
+        issues_result.err().unwrap()
+    );
 }
