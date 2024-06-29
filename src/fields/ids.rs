@@ -1,4 +1,7 @@
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct IdName {
-    pub id: u64,
-    pub name: String,
+    id: Option<i32>,
+    name: Option<String>,
 }

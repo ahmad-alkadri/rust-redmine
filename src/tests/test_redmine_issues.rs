@@ -17,7 +17,10 @@ pub async fn test_get_issues() {
     let client = RedmineClient::new(&urlapik.url, &urlapik.apik, None, None);
 
     // Fetch issues and handle result
-    let issues_result = client.get_issues().await.expect("Failed to fetch issues");
+    let issues_result = client
+        .get_issues(None, None)
+        .await
+        .expect("Failed to fetch issues");
 
     if let Some(issues) = issues_result.issues {
         for issue in issues {

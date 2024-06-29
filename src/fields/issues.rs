@@ -1,3 +1,4 @@
+use crate::fields::ids::IdName;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -69,12 +70,6 @@ pub struct Issue {
     pub done_ratio: Option<f32>,
     pub estimated_hours: Option<f32>,
     pub journals: Option<Vec<Journal>>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct IdName {
-    id: Option<i32>,
-    name: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

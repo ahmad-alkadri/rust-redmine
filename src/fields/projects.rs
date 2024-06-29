@@ -1,16 +1,34 @@
-use crate::fields::issues::IdName;
+use crate::fields::ids::IdName;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Project {
-    pub id: u64,
-    pub parent: IdName,
-    pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parent: Option<IdName>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parent_id: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
     pub identifier: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_public: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inherit_members: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tracker_ids: Option<Vec<u32>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub created_on: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub updated_on: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub enabled_module_names: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub custom_field_values: Option<HashMap<String, String>>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -25,7 +43,7 @@ pub struct ProjectsResult {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ProjectCreationRequest {
-    pub project: ProjectToCreate,
+    pub project: Project,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

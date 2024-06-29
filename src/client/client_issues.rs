@@ -5,8 +5,17 @@ use crate::{
 use reqwest::Error;
 
 impl RedmineClient {
-    pub async fn get_issues(&self) -> Result<IssuesResult, Box<dyn std::error::Error>> {
-        let url: String = format!("{}/issues.json?key={}", self.base_url, self.api_key);
+    pub async fn get_issues(
+        &self,
+        offset: Option<i32>,
+        limit: Option<i32>,
+    ) -> Result<IssuesResult, Box<dyn std::error::Error>> {
+        let url: String = format!(
+            "{}/issues.json?key={}{}",
+            self.base_url,
+            self.api_key,
+            self.get_pagination_clause(limit, offset),
+        );
         let response: reqwest::Response = self.client.get(&url).send().await?;
 
         // Check the status code first
@@ -28,7 +37,7 @@ impl RedmineClient {
         Ok(issues_result)
     }
 
-    pub async fn get_issue(&self, id: i32) -> Result<Option<Issue>, Error> {
+    pub async fn get_issue(&self, id: &str) -> Result<Option<Issue>, Error> {
         let url: String = format!("{}/issues/{}.json?key={}", self.base_url, id, self.api_key);
         let response = self
             .client
@@ -40,7 +49,7 @@ impl RedmineClient {
         Ok(response.issue)
     }
 
-    pub async fn get_issues_by_query(&self, query_id: i32) -> Result<Option<Vec<Issue>>, Error> {
+    pub async fn get_issues_by_query(&self, query_id: &str) -> Result<Option<Vec<Issue>>, Error> {
         let url = format!(
             "{}/issues.json?query_id={}&key={}",
             self.base_url, query_id, self.api_key
