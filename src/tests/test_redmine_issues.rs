@@ -45,15 +45,32 @@ pub async fn test_create_get_delete_issue() {
     let issue = example_issue(unique_subject.clone(), unique_project_id.clone());
     let filter_issue = example_issue_filter(unique_project_id);
 
+    // Try creating an Issue
     let issue_res = client.create_issue(issue).await;
-    let issue_in_project: Result<Option<Vec<crate::fields::issues::Issue>>, reqwest::Error> =
-        client.get_issues_by_filter(&filter_issue).await;
+
+    // Try getting the issue by taking all the issues in the project
+    let issue_in_project = client.get_issues_by_filter(&filter_issue).await;
 
     assert!(
         issue_res.is_ok(),
         "Failed creating new issue: {:?}",
         issue_res.err().unwrap()
     );
+
+    let issueres = issue_res.ok().unwrap();
+    assert!(
+        issueres.issue.is_some(),
+        "Can't read the newly created issue; check with the Redmine",
+    );
+    let mut issue_id = 1;
+    if let Some(issue_created) = issueres.issue {
+        if let Some(issue_created_id) = issue_created.id {
+            issue_id = issue_created_id;
+        }
+    }
+
+    // Try deleting the issue
+    let issue_deleted = client.delete_issue(issue_id).await;
 
     assert!(
         issue_in_project.is_ok(),
@@ -74,6 +91,13 @@ pub async fn test_create_get_delete_issue() {
         .into_iter()
         .find(|issue| issue.subject == Some(unique_subject.clone()));
     assert!(issue.is_some());
+
+    assert!(
+        issue_deleted.is_ok(),
+        "Failed in deleting issue id {:?}: {:?}:",
+        issue_id,
+        issue_deleted.err().unwrap()
+    );
 }
 
 #[tokio::test]
