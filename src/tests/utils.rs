@@ -35,10 +35,14 @@ pub fn example_issue_filter(project_id: String) -> crate::fields::issues::IssueF
 }
 
 #[cfg(test)]
-pub fn example_issue(subject: String, project_id: String) -> crate::fields::issues::Issue {
+pub fn example_issue(
+    subject: String,
+    id: Option<i32>,
+    project_id: String,
+) -> crate::fields::issues::Issue {
     use crate::fields::issues::Issue;
     return Issue {
-        id: None,
+        id,
         subject: Some(subject),
         description: Some("".to_string()),
         project_id: Some(project_id),

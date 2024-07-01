@@ -10,7 +10,8 @@ pub async fn test_create_get_delete_issue() {
     // Load environment variables
     dotenv().ok();
 
-    let uuid = Uuid::new_v4();
+    let uuid_issue = Uuid::new_v4();
+    let uuid_project = Uuid::new_v4();
 
     // Create UrlApik instance and check for required environment variables
     let urlapik = UrlApik::new();
@@ -20,7 +21,7 @@ pub async fn test_create_get_delete_issue() {
     let client = RedmineClient::new(&urlapik.url, &urlapik.apik, None, None);
 
     // Create the project to attach the issue
-    let unique_project_id = uuid.to_string();
+    let unique_project_id = uuid_project.to_string();
     let project_res = client
         .create_project(example_project(
             unique_project_id.clone(),
@@ -40,16 +41,21 @@ pub async fn test_create_get_delete_issue() {
         );
     }
 
-    let unique_subject = uuid.to_string();
-
-    let issue = example_issue(unique_subject.clone(), unique_project_id.clone());
-    let filter_issue = example_issue_filter(unique_project_id);
+    let unique_subject = uuid_issue.to_string();
 
     // Try creating an Issue
-    let issue_res = client.create_issue(issue).await;
+    let issue_res = client
+        .create_issue(example_issue(
+            unique_subject.clone(),
+            None,
+            unique_project_id.clone(),
+        ))
+        .await;
 
     // Try getting the issue by taking all the issues in the project
-    let issue_in_project = client.get_issues_by_filter(&filter_issue).await;
+    let issue_in_project = client
+        .get_issues_by_filter(&example_issue_filter(unique_project_id.clone()))
+        .await;
 
     assert!(
         issue_res.is_ok(),
@@ -69,34 +75,69 @@ pub async fn test_create_get_delete_issue() {
         }
     }
 
+    // Try updating the issue
+    let issue_updated = client
+        .update_issue(
+            issue_id,
+            example_issue(
+                "Updated subject".to_string(),
+                None,
+                unique_project_id.clone(),
+            ),
+        )
+        .await;
+
     // Try deleting the issue
     let issue_deleted = client.delete_issue(issue_id).await;
 
+    // Try deleting the temporary project to which the issue was attached to
+    let project_deleted = client.delete_project(unique_project_id.clone()).await;
+
+    // ASSERTIONS BLOCK --- //
+    // Assert there's no error when trying to find issue in the target project
     assert!(
         issue_in_project.is_ok(),
         "Found error when trying to find issue in the target project: {:?}",
         issue_in_project.err().unwrap()
     ); // 1. there is no error
 
-    let issues = issue_in_project.unwrap(); // unwrap the Result
-    assert!(issues.is_some()); // 2. there is a Vec<crate::fields::issues::Issue>, not None
+    // Assert that there's indeed issues in the project, not None
+    let issues = issue_in_project.unwrap();
+    assert!(issues.is_some());
 
-    let issues_vec = issues.unwrap(); // unwrap the Option
+    // Assert that the newly created issue is found within the project
+    let issues_vec = issues.unwrap();
     assert!(
         !issues_vec.is_empty(),
         "Not found any issues in the target project."
-    ); // make sure the vec is not empty
-
+    );
     let issue = issues_vec
         .into_iter()
         .find(|issue| issue.subject == Some(unique_subject.clone()));
     assert!(issue.is_some());
 
+    // Assert that the issue update works
+    assert!(
+        issue_updated.is_ok(),
+        "Failed in updating issue id {:?}: {:?}",
+        issue_id,
+        issue_updated.err().unwrap()
+    );
+
+    // Assert that the issue deletion works
     assert!(
         issue_deleted.is_ok(),
         "Failed in deleting issue id {:?}: {:?}:",
         issue_id,
         issue_deleted.err().unwrap()
+    );
+
+    // Assert that the project deletion works
+    assert!(
+        project_deleted.is_ok(),
+        "Failed in deleting temporary project with id {:?}: {:?}",
+        unique_project_id,
+        project_deleted.err().unwrap()
     );
 }
 

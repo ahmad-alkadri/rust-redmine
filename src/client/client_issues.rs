@@ -5,7 +5,7 @@ use crate::{
         issues::{Issue, IssueFilter, IssueRequest, IssueResult, IssuesResult},
     },
 };
-use reqwest::{Error, Response};
+use reqwest::{Error, Response, StatusCode};
 
 impl RedmineClient {
     pub async fn get_issues(
@@ -151,18 +151,46 @@ impl RedmineClient {
         Ok(r)
     }
 
-    // pub async fn update_issue(&self, issue: Issue) -> Result<(), Error> {
-    //     let url = format!(
-    //         "{}/issues/{}.json?key={}",
-    //         self.base_url, issue.id, self.api_key
-    //     );
-    //     let mut request: IssueRequest;
+    pub async fn update_issue(
+        &self,
+        id: i32,
+        issue: Issue,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let url = format!("{}/issues/{}.json?key={}", self.base_url, id, self.api_key);
+        let ir = IssueRequest {
+            pubissue: None,
+            issue,
+        };
+        let s = serde_json::to_string(&ir)?;
+        let req = self
+            .client
+            .put(&url)
+            .header("Content-Type", "application/json")
+            .body(s)
+            .build()?;
 
-    //     self.client.put(&url).json(&request).send().await?;
-    //     Ok(())
-    // }
+        let res: Response = self.client.execute(req).await?;
 
-    pub async fn delete_issue(&self, id: i32) -> Result<(), Error> {
+        if res.status() == StatusCode::NOT_FOUND {
+            return Err(Box::new(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                "Not Found",
+            )));
+        }
+
+        if res.status() != StatusCode::NO_CONTENT {
+            let er: ErrorsResult = res.json().await?;
+            let error_message = er.errors.join("\n");
+            return Err(Box::new(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                error_message,
+            )));
+        }
+
+        Ok(())
+    }
+
+    pub async fn delete_issue(&self, id: i32) -> Result<(), Box<dyn std::error::Error>> {
         let url = format!("{}/issues/{}.json?key={}", self.base_url, id, self.api_key);
 
         self.client.delete(&url).send().await?;
